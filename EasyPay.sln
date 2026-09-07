@@ -1,6 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyPay", "EasyPay\EasyPay.csproj", "{D58FE749-9C4E-49E9-A02E-F40AB7A9CA9A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api\Api.csproj", "{D58FE749-9C4E-49E9-A02E-F40AB7A9CA9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{D680A16B-5240-4396-A3D9-AADA709AE6B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{DDB899C3-C40A-4B71-990C-F312BA1435EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{5E2085EE-3E58-463A-9DEE-A61C7E66561E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +18,17 @@ Global
 		{D58FE749-9C4E-49E9-A02E-F40AB7A9CA9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D58FE749-9C4E-49E9-A02E-F40AB7A9CA9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D58FE749-9C4E-49E9-A02E-F40AB7A9CA9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D680A16B-5240-4396-A3D9-AADA709AE6B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D680A16B-5240-4396-A3D9-AADA709AE6B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D680A16B-5240-4396-A3D9-AADA709AE6B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D680A16B-5240-4396-A3D9-AADA709AE6B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDB899C3-C40A-4B71-990C-F312BA1435EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDB899C3-C40A-4B71-990C-F312BA1435EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDB899C3-C40A-4B71-990C-F312BA1435EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDB899C3-C40A-4B71-990C-F312BA1435EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E2085EE-3E58-463A-9DEE-A61C7E66561E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E2085EE-3E58-463A-9DEE-A61C7E66561E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E2085EE-3E58-463A-9DEE-A61C7E66561E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E2085EE-3E58-463A-9DEE-A61C7E66561E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
