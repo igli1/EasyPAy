@@ -10,20 +10,20 @@ namespace Api.Controllers;
 [Route("api/import")]
 public class ImportController : ControllerBase
 {
-    private readonly WorkOrderImportService _workOrderImportService;
+    //private readonly WorkOrderImportService _workOrderImportService;
     private readonly IClientRepository _clientRepository;
     private readonly ITechnicianRepository _technicianRepository;
     private readonly IExcelReader<RawPersonRow> _personReader;
     private readonly IWebHostEnvironment _environment;
     
     public ImportController(
-        WorkOrderImportService workOrderImportService,
+        //WorkOrderImportService workOrderImportService,
         IClientRepository clientRepository,
         ITechnicianRepository technicianRepository,
         IExcelReader<RawPersonRow> personReader,
         IWebHostEnvironment environment)
     {
-        _workOrderImportService = workOrderImportService;
+        //_workOrderImportService = workOrderImportService;
         _clientRepository = clientRepository;
         _technicianRepository = technicianRepository;
         _personReader = personReader;

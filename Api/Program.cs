@@ -1,6 +1,7 @@
 using Application.Dtos;
 using Application.Interfaces;
 using Infrastructure;
+using Infrastructure.Excel;
 using Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<ITechnicianRepository, TechnicianRepository>();
 builder.Services.AddScoped<IWorkOrderRepository, WorkOrderRepository>();
 
+builder.Services.AddScoped<IExcelReader<RawPersonRow>, ExcelPersonReader>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
