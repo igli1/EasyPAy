@@ -1,5 +1,6 @@
 ﻿using Application.Dtos;
 using Application.Extraction;
+using Application.Helpers;
 using Application.Interfaces;
 using Domain.Entities;
 
@@ -32,51 +33,80 @@ public class WorkOrderImportService
         _reportWriter = reportWriter;
     }
 
-    public async Task<ServiceResponseDto<string>> RunAsync(string workOrderFilePath, string reportOutputPath)
-{
-    if (!File.Exists(workOrderFilePath))
+    public async Task<ServiceResponseDto<string>> RunAsync(Stream workOrderStream)
     {
-        return ServiceResponseDto<string>.Fail($"Work order file not found: {workOrderFilePath}");
-    }
-
-    List<Client> clients;
-    List<Technician> technicians;
-
-    try
-    {
-        clients = await _clientRepository.GetAllAsync();
-        technicians = await _technicianRepository.GetAllAsync();
-    }
-    catch (Exception ex)
-    {
-        return ServiceResponseDto<string>.Fail($"Failed to load reference data: {ex.Message}");
-    }
-
-    if (clients.Count == 0 || technicians.Count == 0)
-    {
-        return ServiceResponseDto<string>.Fail("Clients or Technicians table is empty. Import those first.");
-    }
-
-    var technicianLookup = technicians.ToDictionary(
-        t => Normalize($"{t.FirstName} {t.LastName}"),
-        t => t);
-
-    var results = new List<WorkOrderImportResult>();
-    var batch = new List<WorkOrder>();
-    int rowNumber = 0;
-
-    try
-    {
-        await using var fileStream = new FileStream(workOrderFilePath, FileMode.Open, FileAccess.Read);
-
-        foreach (var row in _workOrderReader.ReadRows(fileStream))
+        if (workOrderStream is null || workOrderStream.Length == 0)
         {
-            rowNumber++;
-            var result = ProcessRow(row, rowNumber, clients, technicianLookup, batch);
-            results.Add(result);
+            return ServiceResponseDto<string>.Fail("Work order file is empty or missing.");
+        }
 
-            if (batch.Count >= BatchSize)
+        List<Client> clients;
+        List<Technician> technicians;
+
+        try
+        {
+            clients = await _clientRepository.GetAllAsync();
+            technicians = await _technicianRepository.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            return ServiceResponseDto<string>.Fail($"Failed to load reference data: {ex.Message}");
+        }
+
+        if (clients.Count == 0)
+        {
+            return ServiceResponseDto<string>.Fail("Clients table is empty. Import the Finance client list first.");
+        }
+
+        var technicianLookup = technicians.ToDictionary(
+            t => Normalize($"{t.FirstName} {t.LastName}"),
+            t => t);
+
+        // Pass 1: discover technicians from the work order data itself (no separate source file exists)
+        var distinctTechnicianNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var row in _workOrderReader.ReadRows(workOrderStream))
+        {
+            if (!string.IsNullOrWhiteSpace(row.TechnicianName))
+                distinctTechnicianNames.Add(row.TechnicianName.Trim());
+        }
+
+        var newTechnicianNames = distinctTechnicianNames
+            .Where(name => !technicianLookup.ContainsKey(Normalize(name)))
+            .ToList();
+
+        if (newTechnicianNames.Count > 0)
+        {
+            var newTechnicians = newTechnicianNames
+                .Select(name => new RawPersonRow { FullName = name })
+                .Select(NameConvention.ToTechnician)
+                .ToList();
+
+            await _technicianRepository.BulkInsertAsync(newTechnicians);
+
+            technicians = await _technicianRepository.GetAllAsync();
+            technicianLookup = technicians.ToDictionary(
+                t => Normalize($"{t.FirstName} {t.LastName}"),
+                t => t);
+        }
+
+
+        workOrderStream.Seek(0, SeekOrigin.Begin);
+
+        var results = new List<WorkOrderImportResult>();
+        var batch = new List<WorkOrder>();
+        int rowNumber = 0;
+
+        try
+        {
+            foreach (var row in _workOrderReader.ReadRows(workOrderStream))
             {
+                rowNumber++;
+                var result = ProcessRow(row, rowNumber, clients, technicianLookup, batch);
+                results.Add(result);
+
+                if (batch.Count >= BatchSize)
+                {
                     await _workOrderRepository.BulkInsertAsync(batch);
                     batch.Clear();
                 }
@@ -91,16 +121,17 @@ public class WorkOrderImportService
         {
             return ServiceResponseDto<string>.Fail($"Import failed at row {rowNumber}: {ex.Message}");
         }
-
-        await _reportWriter.WriteAsync(results, reportOutputPath);
+        
 
         int successCount = results.Count(r => r.Success);
         int failCount = results.Count - successCount;
 
-            return ServiceResponseDto<string>.Success(
-            reportOutputPath,
-            $"Import finished. {successCount} succeeded, {failCount} failed. Report at {reportOutputPath}");
+        return ServiceResponseDto<string>.Success(
+            $"Import finished. {successCount} succeeded, {failCount} failed.");
     }
+
+    private static string Normalize(string input) =>
+        input.Trim().ToLowerInvariant().Replace("ç", "c").Replace("ë", "e");
 
     private WorkOrderImportResult ProcessRow(
         RawWorkOrderRow row,
@@ -156,7 +187,4 @@ public class WorkOrderImportService
 
         return result;
     }
-
-    private static string Normalize(string input) =>
-        input.Trim().ToLowerInvariant().Replace("ç", "c").Replace("ë", "e");
 }

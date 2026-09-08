@@ -1,8 +1,11 @@
 using Application.Dtos;
 using Application.Interfaces;
+using Application.Services;
 using Infrastructure;
 using Infrastructure.Excel;
+using Infrastructure.Matching;
 using Infrastructure.Persistence.Repositories;
+using Infrastructure.Reporting;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +21,11 @@ builder.Services.AddScoped<ITechnicianRepository, TechnicianRepository>();
 builder.Services.AddScoped<IWorkOrderRepository, WorkOrderRepository>();
 
 builder.Services.AddScoped<IExcelReader<RawPersonRow>, ExcelPersonReader>();
+
+builder.Services.AddScoped<IImportReportWriter, CsvImportReportWriter>();
+builder.Services.AddScoped<INameMatcher, JaroWinklerNameMatcher>();
+builder.Services.AddScoped<IExcelReader<RawWorkOrderRow>, ExcelWorkOrderReader>();
+builder.Services.AddScoped<WorkOrderImportService>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
