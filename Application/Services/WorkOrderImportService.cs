@@ -13,7 +13,6 @@ public class WorkOrderImportService
     private readonly ITechnicianRepository _technicianRepository;
     private readonly IWorkOrderRepository _workOrderRepository;
     private readonly INameMatcher _nameMatcher;
-    private readonly IImportReportWriter _reportWriter;
 
     private const int BatchSize = 5000;
 
@@ -22,15 +21,13 @@ public class WorkOrderImportService
         IClientRepository clientRepository,
         ITechnicianRepository technicianRepository,
         IWorkOrderRepository workOrderRepository,
-        INameMatcher nameMatcher,
-        IImportReportWriter reportWriter)
+        INameMatcher nameMatcher)
     {
         _workOrderReader = workOrderReader;
         _clientRepository = clientRepository;
         _technicianRepository = technicianRepository;
         _workOrderRepository = workOrderRepository;
         _nameMatcher = nameMatcher;
-        _reportWriter = reportWriter;
     }
 
     public async Task<ServiceResponseDto<string>> RunAsync(Stream workOrderStream)

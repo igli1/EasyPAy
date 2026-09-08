@@ -2,6 +2,7 @@
 using Application.Helpers;
 using Application.Interfaces;
 using Application.Services;
+using Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -14,20 +15,20 @@ public class ImportController : ControllerBase
     private readonly IClientRepository _clientRepository;
     private readonly ITechnicianRepository _technicianRepository;
     private readonly IExcelReader<RawPersonRow> _personReader;
-    private readonly IWebHostEnvironment _environment;
+    private readonly IWorkOrderRepository _workOrderRepository;
     
     public ImportController(
         WorkOrderImportService workOrderImportService,
         IClientRepository clientRepository,
         ITechnicianRepository technicianRepository,
         IExcelReader<RawPersonRow> personReader,
-        IWebHostEnvironment environment)
+        IWorkOrderRepository workOrderRepository)
     {
         _workOrderImportService = workOrderImportService;
         _clientRepository = clientRepository;
         _technicianRepository = technicianRepository;
         _personReader = personReader;
-        _environment = environment;
+        _workOrderRepository = workOrderRepository;
     }
     
     [HttpPost("clients")]
@@ -56,5 +57,19 @@ public class ImportController : ControllerBase
         var response = await _workOrderImportService.RunAsync(stream);
 
         return response.Status ? Ok(response) : BadRequest(response);
+    }
+    
+    [HttpGet("work-orders/export")]
+    public async Task<IActionResult> ExportWorkOrders()
+    {
+        var rows = await _workOrderRepository.GetAllForReportAsync();
+
+        if (rows.Count == 0)
+            return NotFound(ServiceResponseDto<byte[]>.Fail("No work orders found in the database."));
+
+        var csv = CsvBuilder.BuildWorkOrderCsv(rows);
+        var fileName = $"work-orders-export-{DateTime.UtcNow:yyyyMMddHHmmss}.csv";
+
+        return File(csv, "text/csv", fileName);
     }
 }
